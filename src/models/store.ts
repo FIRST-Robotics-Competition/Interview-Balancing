@@ -1,49 +1,113 @@
 import { Event } from "@/models/api";
+import { ImpactExportCSV } from "@/models/schemas";
 import { create } from "zustand";
 
-interface AppState {
+export enum InterviewType {
+  IMPACT = "Impact",
+  DEANS_LIST = "Dean's List",
+}
+
+export interface InterviewConfig {
+  numPanels: number;
+  teams: string[];
+  windowSizeMinutes: number;
+}
+
+export interface AppState {
   event?: Event;
   setEvent: (event: Event) => void;
 
-  numPanels: number;
-  setNumPanels: (numPanels: number) => void;
+  validImpactExportCSVData: ImpactExportCSV | null;
+  setValidImpactExportCSVData: (data: ImpactExportCSV | null) => void;
 
-  teams: string[];
-  setTeams: (teams: string[]) => void;
+  impactExportCSVValidationErrors: string[];
+  setImpactExportCSVValidationErrors: (errors: string[]) => void;
 
-  windowSizeMinutes: number;
-  setWindowSizeMinutes: (windowSizeMinutes: number) => void;
+  interviewConfigs: Record<InterviewType, InterviewConfig>;
+  updateInterviewConfig: (
+    type: InterviewType,
+    updates: Partial<InterviewConfig>
+  ) => void;
 }
 
 const useAppStore = create<AppState>((set) => ({
   event: undefined,
   setEvent: (event) => set({ event }),
 
-  numPanels: 2,
-  setNumPanels: (numPanels) => set({ numPanels }),
+  validImpactExportCSVData: null,
+  setValidImpactExportCSVData: (data) =>
+    set((state) => {
+      if (data === null) {
+        return { validImpactExportCSVData: data };
+      }
 
-  teams: [
-    "125",
-    "3467",
-    "78",
-    "131",
-    "2713",
-    "1922",
-    "509",
-    "716",
-    "2877",
-    "246",
-    "5735",
-    "2067",
-    "2084",
-    "2876",
-    "9729",
-    "238",
-  ],
-  setTeams: (teams) => set({ teams }),
+      return {
+        validImpactExportCSVData: data,
+        interviewConfigs: {
+          ...state.interviewConfigs,
+          [InterviewType.IMPACT]: {
+            ...state.interviewConfigs[InterviewType.IMPACT],
+            teams: data.map((r) => r["Team Number"]),
+          },
+        },
+      };
+    }),
 
-  windowSizeMinutes: 10,
-  setWindowSizeMinutes: (windowSizeMinutes) => set({ windowSizeMinutes }),
+  impactExportCSVValidationErrors: [],
+  setImpactExportCSVValidationErrors: (errors) =>
+    set({ impactExportCSVValidationErrors: errors }),
+
+  interviewConfigs: {
+    [InterviewType.IMPACT]: {
+      numPanels: 2,
+      teams: [
+        "1",
+        "3",
+        "5",
+        "7",
+        "9",
+        "11",
+        "13",
+        "15",
+        "17",
+        "19",
+        "21",
+        "23",
+        "25",
+      ],
+      windowSizeMinutes: 12,
+    },
+    [InterviewType.DEANS_LIST]: {
+      numPanels: 1,
+      teams: [
+        "2",
+        "4",
+        "6",
+        "8",
+        "10",
+        "12",
+        "14",
+        "16",
+        "18",
+        "20",
+        "22",
+        "24",
+        "26",
+      ],
+      windowSizeMinutes: 7,
+    },
+  },
+
+  updateInterviewConfig: (type, updates) =>
+    set((state) => ({
+      interviewConfigs: {
+        ...state.interviewConfigs,
+        [type]: {
+          ...state.interviewConfigs[type],
+          ...updates,
+        },
+      },
+    })),
 }));
 
 export default useAppStore;
