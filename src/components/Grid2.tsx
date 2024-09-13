@@ -1,6 +1,6 @@
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo, useCallback, useState } from "react";
 import { sumBy } from "lodash-es";
-import RGL, { WidthProvider, Layout } from "react-grid-layout";
+import RGL, { WidthProvider, Layout, DragOverEvent } from "react-grid-layout";
 import useAppStore, { InterviewConfig, InterviewType } from "@/models/store";
 
 const ReactGridLayout = WidthProvider(RGL);
@@ -31,6 +31,7 @@ const InterviewGrid: React.FC = () => {
   const store = useAppStore();
   const teams = store.interviewConfigs[InterviewType.IMPACT].teams;
   const timeSlots = useMemo(() => generateTimeSlots(), []);
+  const [layout, setLayout] = useState<Layout[]>([]);
 
   const totalCols = useMemo(
     () =>
@@ -40,6 +41,18 @@ const InterviewGrid: React.FC = () => {
       ) + 1,
     [store.interviewConfigs]
   );
+
+  const columnRanges = useMemo(() => {
+    let currentX = 1; // Start after the time column
+    return Object.entries(store.interviewConfigs).reduce(
+      (acc, [type, config]) => {
+        acc[type] = { start: currentX, end: currentX + config.numPanels - 1 };
+        currentX += config.numPanels;
+        return acc;
+      },
+      {} as Record<string, { start: number; end: number }>
+    );
+  }, [store.interviewConfigs]);
 
   const generateLayout = useCallback((): Layout[] => {
     const timeLayout = timeSlots.map((time, index) => ({
@@ -51,18 +64,21 @@ const InterviewGrid: React.FC = () => {
       static: true,
     }));
 
-    const teamLayout = teams.map((team, index) => ({
-      i: `team-${index}`,
-      x: 1,
-      y: index,
-      w: 1,
-      h: 1,
-      isDraggable: true,
-      isResizable: false,
-    }));
+    const interviewLayouts = Object.entries(store.interviewConfigs).flatMap(
+      ([type, config]) => {
+        const { start } = columnRanges[type];
+        return config.teams.map((team, index) => ({
+          i: `${type}-team-${index}`,
+          x: start + (index % config.numPanels),
+          y: Math.floor(index / config.numPanels),
+          w: 1,
+          h: 1,
+        }));
+      }
+    );
 
-    return [...timeLayout, ...teamLayout];
-  }, [timeSlots, teams]);
+    return [...timeLayout, ...interviewLayouts];
+  }, [timeSlots, store.interviewConfigs, columnRanges]);
 
   const generateDOM = useCallback(() => {
     const layout = generateLayout();
@@ -73,9 +89,9 @@ const InterviewGrid: React.FC = () => {
           <div
             key={l.i}
             data-grid={l}
-            className="bg-white p-2 shadow-md rounded"
+            className="bg-white p-2 shadow-md border border-gray-200"
           >
-            <span className="text-black">
+            <span className="text-black text-sm">
               {timeSlots[timeIndex].toLocaleTimeString("en-US", {
                 hour: "numeric",
                 minute: "numeric",
@@ -84,21 +100,26 @@ const InterviewGrid: React.FC = () => {
             </span>
           </div>
         );
-      } else if (l.i.startsWith("team-")) {
-        const teamIndex = parseInt(l.i.split("-")[1]);
+      } else {
+        const [type, _, teamIndex] = l.i.split("-");
         return (
           <div
             key={l.i}
             data-grid={l}
-            className="bg-blue-200 p-2 shadow-md rounded"
+            className="bg-blue-200 p-2 shadow-md border border-gray-200"
           >
-            <span className="text-black">{teams[teamIndex]}</span>
+            <span className="text-black text-sm">
+              {
+                store.interviewConfigs[type as InterviewType].teams[
+                  parseInt(teamIndex)
+                ]
+              }
+            </span>
           </div>
         );
       }
-      return null;
     });
-  }, [generateLayout, timeSlots, teams]);
+  }, [generateLayout, timeSlots, store.interviewConfigs]);
 
   const onDragStart = useCallback(() => {
     if (isBrowser) {
@@ -112,20 +133,45 @@ const InterviewGrid: React.FC = () => {
     }
   }, []);
 
+  // const onDrag = useCallback(
+  //   (layout: Layout[], oldItem: Layout, newItem: Layout) => {
+  //     const [type] = newItem.i.split("-");
+  //     const { start, end } = columnRanges[type];
+
+  //     if (newItem.x < start) {
+  //       newItem.x = start;
+  //     } else if (newItem.x > end) {
+  //       newItem.x = end;
+  //     }
+  //   },
+  //   [columnRanges]
+  // );
+
+  const onDropDragOver = useCallback(
+    (e: DragOverEvent): { w?: number; h?: number } | false | undefined => {
+      console.log(e);
+
+      return undefined;
+    },
+    [columnRanges]
+  );
+
   return (
     <div className="bg-gray-200 p-4 rounded">
       <ReactGridLayout
         className="layout"
-        layout={generateLayout()}
+        layout={layout}
         cols={totalCols}
-        rowHeight={30}
+        rowHeight={50}
         width={1200}
-        compactType={null}
-        preventCollision={true}
+        compactType={"vertical"}
+        preventCollision={false}
+        margin={[1, 1]}
         onDragStart={onDragStart}
         onDragStop={onDragStop}
-        isDraggable={false}
-        isResizable={false}
+        // // onDrag={onDrag}
+        isDraggable={true}
+        isResizable={true}
       >
         {generateDOM()}
       </ReactGridLayout>

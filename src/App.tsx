@@ -1,8 +1,10 @@
+import TaskApp from "@/components/dnd/taskapp";
 import EventSelector from "@/components/EventSelector";
 import Grid2 from "@/components/Grid2";
 import GridLayout from "@/components/GridLayout";
 import ImpactExportUploader from "@/components/ImpactExportUploader";
 import LabeledInput from "@/components/LabeledInput";
+import RDND from "@/components/RDND";
 import TeamInput from "@/components/TeamInput";
 import { Input } from "@/components/ui/input";
 import useAppStore, { InterviewType } from "@/models/store";
@@ -28,7 +30,11 @@ function App() {
 
       {/* <GridLayout /> */}
 
-      <Grid2 />
+      {/* <Grid2 /> */}
+
+      {/* <RDND /> */}
+
+      <TaskApp />
     </>
   );
 }
