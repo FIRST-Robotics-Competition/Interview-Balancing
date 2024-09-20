@@ -1,12 +1,9 @@
-import React, { useEffect, useState } from "react";
-import {
-  DragDropContext,
-  Droppable,
-  Draggable,
-  DropResult,
-} from "@hello-pangea/dnd";
+import { useEffect, useState } from "react";
+import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import useAppStore, { InterviewType } from "@/models/store";
-import { calculateColumnRowHeights, cn } from "@/lib/utils";
+import { calculateColumnRowHeights, InterviewSlot } from "@/lib/utils";
+import TimeColumn from "@/components/grid/timeColumn";
+import InterviewColumn from "@/components/grid/interviewColumn";
 
 const startDate = new Date(2024, 8, 19);
 const endDate = new Date(2024, 8, 20);
@@ -38,24 +35,6 @@ const generateTimeSlots = (
 const dlTimeSlots = generateTimeSlots(startDate, endDate, 20);
 const impactTimeSlots = generateTimeSlots(startDate, endDate, 30);
 
-interface InterviewSlot {
-  interviewType: InterviewType;
-  teamKey: string | null;
-}
-
-const CellWrapper = React.forwardRef<
-  HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & { rowHeight: number }
->(({ className, rowHeight, children, ...props }, ref) => (
-  <div>
-    <div className={cn("flex h-full border-b", className)} ref={ref} {...props}>
-      <div className="" style={{ height: `${rowHeight}px` }} />
-      {children}
-    </div>
-  </div>
-));
-CellWrapper.displayName = "CellWrapper";
-
 function DNDGrid() {
   const store = useAppStore();
 
@@ -76,10 +55,33 @@ function DNDGrid() {
     );
   }, []);
 
+  const [impactInterviewSlots, setImpactInterviewSlots] = useState<
+    InterviewSlot[]
+  >(
+    impactTimeSlots.map((_) => ({
+      interviewType: InterviewType.IMPACT,
+      teamKey: null,
+    }))
+  );
+
+  useEffect(() => {
+    const teams = store.interviewConfigs[InterviewType.IMPACT].teams;
+
+    setImpactInterviewSlots((prevSlots) =>
+      prevSlots.map((slot, index) =>
+        index < teams.length ? { ...slot, teamKey: teams[index] } : slot
+      )
+    );
+  }, []);
+
   const onDragEnd = (result: DropResult) => {
     const { source, destination } = result;
 
     if (!destination) {
+      return;
+    }
+
+    if (source.droppableId !== destination.droppableId) {
       return;
     }
 
@@ -90,12 +92,21 @@ function DNDGrid() {
       return;
     }
 
-    setDlInterviewSlots((prevSlots) => {
-      const newSlots = Array.from(prevSlots);
-      const [reorderedItem] = newSlots.splice(source.index, 1);
-      newSlots.splice(destination.index, 0, reorderedItem);
-      return newSlots;
-    });
+    if (source.droppableId === "column-2") {
+      setDlInterviewSlots((prevSlots) => {
+        const newSlots = Array.from(prevSlots);
+        const [reorderedItem] = newSlots.splice(source.index, 1);
+        newSlots.splice(destination.index, 0, reorderedItem);
+        return newSlots;
+      });
+    } else {
+      setImpactInterviewSlots((prevSlots) => {
+        const newSlots = Array.from(prevSlots);
+        const [reorderedItem] = newSlots.splice(source.index, 1);
+        newSlots.splice(destination.index, 0, reorderedItem);
+        return newSlots;
+      });
+    }
   };
 
   useEffect(() => {
@@ -109,56 +120,25 @@ function DNDGrid() {
       <div className="flex flex-row space-x-4 p-4">
         <div className="w-1/4">
           <h2 className="text-lg font-semibold mb-2">Times</h2>
-          <div className="">
-            {dlTimeSlots.map((time, index) => (
-              <CellWrapper
-                rowHeight={rowHeights[0]}
-                key={`time-${index}`}
-                className="bg-gray-100 rounded border-b"
-              >
-                {time}
-              </CellWrapper>
-            ))}
-          </div>
+          <TimeColumn timeSlots={dlTimeSlots} rowHeight={rowHeights[0]} />
         </div>
 
-        <Droppable droppableId="column-2">
-          {(droppableProvided) => (
-            <div
-              className="w-1/4"
-              ref={droppableProvided.innerRef}
-              {...droppableProvided.droppableProps}
-            >
-              <h2 className="text-lg font-semibold mb-2">Team</h2>
+        <InterviewColumn
+          interviewSlots={dlInterviewSlots}
+          rowHeight={rowHeights[0]}
+          columnId="column-2"
+        />
 
-              {dlInterviewSlots.map((slot, index) => (
-                <Draggable
-                  key={`${slot.interviewType}-${index}`}
-                  draggableId={`${slot.interviewType}-${index}`}
-                  index={index}
-                >
-                  {(draggableProvided) => (
-                    <CellWrapper
-                      key={`time-${index}`}
-                      ref={draggableProvided.innerRef}
-                      {...draggableProvided.draggableProps}
-                      {...draggableProvided.dragHandleProps}
-                      rowHeight={rowHeights[0]}
-                      className={cn({
-                        "bg-blue-100": slot.teamKey !== null,
-                        "bg-gray-100": slot.teamKey === null,
-                      })}
-                    >
-                      {slot.teamKey !== null ? slot.teamKey : ""}
-                    </CellWrapper>
-                  )}
-                </Draggable>
-              ))}
+        <div className="w-1/4">
+          <h2 className="text-lg font-semibold mb-2">Times</h2>
+          <TimeColumn timeSlots={impactTimeSlots} rowHeight={rowHeights[1]} />
+        </div>
 
-              {droppableProvided.placeholder}
-            </div>
-          )}
-        </Droppable>
+        <InterviewColumn
+          interviewSlots={impactInterviewSlots}
+          rowHeight={rowHeights[1]}
+          columnId="column-3"
+        />
       </div>
     </DragDropContext>
   );

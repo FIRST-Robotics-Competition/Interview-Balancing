@@ -1,3 +1,4 @@
+import { InterviewType } from "@/models/store";
 import { type ClassValue, clsx } from "clsx";
 import {
   addDays,
@@ -15,12 +16,16 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export interface InterviewSlot {
+  interviewType: InterviewType;
+  teamKey: string | null;
+}
+
 export interface TimeSlot {
   id: string;
   timeSlot: Date;
   day: Date;
 }
-
 export const generateTimeSlots = (
   startDate: Date,
   endDate: Date,
