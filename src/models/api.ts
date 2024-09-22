@@ -23,3 +23,53 @@ export interface Event {
   webcasts: string[];
   timezone: string;
 }
+
+export interface TeamList {
+  teams: Team[];
+  teamCountTotal: number;
+  teamCountPage: number;
+  pageCurrent: number;
+  pageTotal: number;
+}
+
+export interface Team {
+  schoolName: string;
+  website: string;
+  homeCMP: string;
+  teamNumber: number;
+  nameFull: string;
+  nameShort: string;
+  city: string;
+  stateProv: string;
+  country: string;
+  rookieYear: number;
+  robotName: string;
+  districtCode: null;
+}
+
+export enum TournamentLevel {
+  Practice = "Practice",
+  Qualification = "Qualification",
+  Playoff = "Playoff",
+}
+
+export type Schedule = Match[];
+
+export interface ScheduleResponse {
+  Schedule: Schedule;
+}
+
+export interface Match {
+  field: string;
+  tournamentLevel: string;
+  description: string;
+  startTime: string | null;
+  matchNumber: number;
+  teams: TeamAppearance[];
+}
+
+export interface TeamAppearance {
+  teamNumber: number;
+  station: string;
+  surrogate: boolean;
+}

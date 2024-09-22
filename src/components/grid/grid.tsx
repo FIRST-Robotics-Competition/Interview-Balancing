@@ -50,10 +50,12 @@ function DNDGrid() {
 
     setDlInterviewSlots((prevSlots) =>
       prevSlots.map((slot, index) =>
-        index < teams.length ? { ...slot, teamKey: teams[index] } : slot
+        index < teams.length
+          ? { ...slot, teamKey: teams[index] }
+          : { ...slot, teamKey: null }
       )
     );
-  }, []);
+  }, [store.interviewConfigs]);
 
   const [impactInterviewSlots, setImpactInterviewSlots] = useState<
     InterviewSlot[]
@@ -69,10 +71,12 @@ function DNDGrid() {
 
     setImpactInterviewSlots((prevSlots) =>
       prevSlots.map((slot, index) =>
-        index < teams.length ? { ...slot, teamKey: teams[index] } : slot
+        index < teams.length
+          ? { ...slot, teamKey: teams[index] }
+          : { ...slot, teamKey: null }
       )
     );
-  }, []);
+  }, [store.interviewConfigs]);
 
   const onDragEnd = (result: DropResult) => {
     const { source, destination } = result;
@@ -108,10 +112,6 @@ function DNDGrid() {
       });
     }
   };
-
-  useEffect(() => {
-    console.log(dlInterviewSlots);
-  }, [dlInterviewSlots]);
 
   const rowHeights = calculateColumnRowHeights(20, 30);
 

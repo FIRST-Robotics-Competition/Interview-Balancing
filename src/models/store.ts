@@ -1,4 +1,5 @@
-import { Event } from "@/models/api";
+import { getEventSchedule, getEventTeams } from "@/lib/api";
+import { Event, Schedule, TeamList } from "@/models/api";
 import { ImpactExportCSV } from "@/models/schemas";
 import { create } from "zustand";
 
@@ -17,6 +18,12 @@ export interface AppState {
   event?: Event;
   setEvent: (event: Event) => void;
 
+  eventTeams?: TeamList;
+  setEventTeams: (teams: TeamList) => void;
+
+  schedule?: Schedule;
+  setSchedule: (schedule: Schedule) => void;
+
   validImpactExportCSVData: ImpactExportCSV | null;
   setValidImpactExportCSVData: (data: ImpactExportCSV | null) => void;
 
@@ -32,7 +39,32 @@ export interface AppState {
 
 const useAppStore = create<AppState>((set) => ({
   event: undefined,
-  setEvent: (event) => set({ event }),
+  setEvent: async (event) => {
+    const teams = await getEventTeams(event.code);
+    const schedule = await getEventSchedule(event.code);
+
+    set((state) => {
+      const configs = {
+        ...state.interviewConfigs,
+        [InterviewType.IMPACT]: {
+          ...state.interviewConfigs[InterviewType.IMPACT],
+          teams: teams.teams.map((t) => t.teamNumber.toString()),
+        },
+        [InterviewType.DEANS_LIST]: {
+          ...state.interviewConfigs[InterviewType.DEANS_LIST],
+          teams: teams.teams.map((t) => t.teamNumber.toString()),
+        },
+      };
+
+      return { event, eventTeams: teams, schedule, interviewConfigs: configs };
+    });
+  },
+
+  eventTeams: undefined,
+  setEventTeams: (teams) => set({ eventTeams: teams }),
+
+  schedule: undefined,
+  setSchedule: (schedule) => set({ schedule }),
 
   validImpactExportCSVData: null,
   setValidImpactExportCSVData: (data) =>
@@ -60,40 +92,12 @@ const useAppStore = create<AppState>((set) => ({
   interviewConfigs: {
     [InterviewType.IMPACT]: {
       numPanels: 2,
-      teams: [
-        "1",
-        "3",
-        "5",
-        "7",
-        "9",
-        "11",
-        "13",
-        "15",
-        "17",
-        "19",
-        "21",
-        "23",
-        "25",
-      ],
+      teams: [],
       windowSizeMinutes: 12,
     },
     [InterviewType.DEANS_LIST]: {
       numPanels: 1,
-      teams: [
-        "2",
-        "4",
-        "6",
-        "8",
-        "10",
-        "12",
-        "14",
-        "16",
-        "18",
-        "20",
-        "22",
-        "24",
-        "26",
-      ],
+      teams: [],
       windowSizeMinutes: 7,
     },
   },
@@ -109,5 +113,9 @@ const useAppStore = create<AppState>((set) => ({
       },
     })),
 }));
+
+useAppStore.subscribe((state) => {
+  console.log(state);
+});
 
 export default useAppStore;
