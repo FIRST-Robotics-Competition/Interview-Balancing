@@ -37,6 +37,7 @@ export default function InterviewColumn({
                   className={cn({
                     "bg-blue-100": slot.teamKey !== null,
                     "bg-gray-100": slot.teamKey === null,
+                    "bg-yellow-300": slot.conflictsWithMatch,
                   })}
                 >
                   {slot.teamKey !== null ? slot.teamKey : ""}

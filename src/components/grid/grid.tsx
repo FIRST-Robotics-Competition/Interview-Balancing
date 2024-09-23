@@ -1,82 +1,124 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { DragDropContext, DropResult } from "@hello-pangea/dnd";
 import useAppStore, { InterviewType } from "@/models/store";
 import { calculateColumnRowHeights, InterviewSlot } from "@/lib/utils";
 import TimeColumn from "@/components/grid/timeColumn";
 import InterviewColumn from "@/components/grid/interviewColumn";
+import { scanForConflicts, updateTeamTimeSlots } from "@/lib/slotAssignments";
+import { addMinutes } from "date-fns";
 
-const startDate = new Date(2024, 8, 19);
-const endDate = new Date(2024, 8, 20);
+// startDate.setHours(11);
+// endDate.setHours(18);
 
 const generateTimeSlots = (
   startDate: Date,
   endDate: Date,
   duration: number
 ) => {
+  startDate.setHours(8);
+  endDate.setHours(18);
+
   const times = [];
-  const current = new Date(startDate);
+  let current = new Date(startDate);
 
   while (current <= endDate) {
-    for (let hour = 8; hour < 18; hour++) {
-      for (let minute = 0; minute < 60; minute += duration) {
-        const time = new Date(current);
-        time.setHours(hour, minute);
-        times.push(
-          time.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-        );
-      }
-    }
-    current.setDate(current.getDate() + 1);
+    const time = new Date(current);
+    const newTime = addMinutes(time, duration);
+    times.push(time);
+    current = newTime;
   }
 
   return times;
 };
 
-const dlTimeSlots = generateTimeSlots(startDate, endDate, 20);
-const impactTimeSlots = generateTimeSlots(startDate, endDate, 30);
-
 function DNDGrid() {
   const store = useAppStore();
+  const startDateRef = useRef(useAppStore.getState().startDate);
+  const endDateRef = useRef(useAppStore.getState().startDate);
 
-  const [dlInterviewSlots, setDlInterviewSlots] = useState<InterviewSlot[]>(
-    dlTimeSlots.map((_) => ({
-      interviewType: InterviewType.DEANS_LIST,
-      teamKey: null,
-    }))
+  useEffect(
+    () =>
+      useAppStore.subscribe((state) => {
+        startDateRef.current = state.startDate;
+        endDateRef.current = state.endDate;
+      }),
+    []
   );
+
+  const dlTimeSlots = useMemo(
+    () =>
+      generateTimeSlots(
+        startDateRef.current,
+        endDateRef.current,
+        store.interviewConfigs[InterviewType.DEANS_LIST].windowSizeMinutes
+      ),
+    [store.interviewConfigs, startDateRef, endDateRef]
+  );
+  const impactTimeSlots = useMemo(
+    () =>
+      generateTimeSlots(
+        startDateRef.current,
+        endDateRef.current,
+        store.interviewConfigs[InterviewType.IMPACT].windowSizeMinutes
+      ),
+    [store.interviewConfigs, startDateRef, endDateRef]
+  );
+
+  const [dlInterviewSlots, setDlInterviewSlots] = useState<InterviewSlot[]>([]);
+
+  useEffect(() => {
+    setDlInterviewSlots(
+      dlTimeSlots.map((time) => ({
+        interviewType: InterviewType.DEANS_LIST,
+        teamKey: null,
+        time,
+        conflictsWithMatch: false,
+      }))
+    );
+  }, [dlTimeSlots, store.schedule]);
 
   useEffect(() => {
     const teams = store.interviewConfigs[InterviewType.DEANS_LIST].teams;
 
     setDlInterviewSlots((prevSlots) =>
-      prevSlots.map((slot, index) =>
-        index < teams.length
-          ? { ...slot, teamKey: teams[index] }
-          : { ...slot, teamKey: null }
+      updateTeamTimeSlots(
+        teams,
+        dlTimeSlots,
+        store.schedule ?? [],
+        prevSlots,
+        store.interviewConfigs[InterviewType.DEANS_LIST].windowSizeMinutes
       )
     );
-  }, [store.interviewConfigs]);
+  }, [store.interviewConfigs, dlTimeSlots, store.schedule]);
 
   const [impactInterviewSlots, setImpactInterviewSlots] = useState<
     InterviewSlot[]
-  >(
-    impactTimeSlots.map((_) => ({
-      interviewType: InterviewType.IMPACT,
-      teamKey: null,
-    }))
-  );
+  >([]);
+
+  useEffect(() => {
+    setImpactInterviewSlots(
+      impactTimeSlots.map((time) => ({
+        interviewType: InterviewType.IMPACT,
+        teamKey: null,
+        time,
+        conflictsWithMatch: false,
+      }))
+    );
+  }, [impactTimeSlots, store.schedule]);
 
   useEffect(() => {
     const teams = store.interviewConfigs[InterviewType.IMPACT].teams;
 
     setImpactInterviewSlots((prevSlots) =>
-      prevSlots.map((slot, index) =>
-        index < teams.length
-          ? { ...slot, teamKey: teams[index] }
-          : { ...slot, teamKey: null }
+      updateTeamTimeSlots(
+        teams,
+        impactTimeSlots,
+        store.schedule ?? [],
+        prevSlots,
+        store.interviewConfigs[InterviewType.IMPACT].windowSizeMinutes
       )
     );
-  }, [store.interviewConfigs]);
+  }, [store.interviewConfigs, impactTimeSlots, store.schedule]);
 
   const onDragEnd = (result: DropResult) => {
     const { source, destination } = result;
@@ -101,19 +143,44 @@ function DNDGrid() {
         const newSlots = Array.from(prevSlots);
         const [reorderedItem] = newSlots.splice(source.index, 1);
         newSlots.splice(destination.index, 0, reorderedItem);
-        return newSlots;
+
+        const zippedSlots = newSlots.map((slot, index) => ({
+          ...slot,
+          time: dlTimeSlots[index],
+        }));
+
+        console.log(zippedSlots);
+
+        return scanForConflicts(
+          zippedSlots,
+          store.schedule ?? [],
+          store.interviewConfigs[InterviewType.DEANS_LIST].windowSizeMinutes
+        );
       });
     } else {
       setImpactInterviewSlots((prevSlots) => {
         const newSlots = Array.from(prevSlots);
         const [reorderedItem] = newSlots.splice(source.index, 1);
         newSlots.splice(destination.index, 0, reorderedItem);
-        return newSlots;
+
+        const zippedSlots = newSlots.map((slot, index) => ({
+          ...slot,
+          time: impactTimeSlots[index],
+        }));
+
+        return scanForConflicts(
+          zippedSlots,
+          store.schedule ?? [],
+          store.interviewConfigs[InterviewType.IMPACT].windowSizeMinutes
+        );
       });
     }
   };
 
-  const rowHeights = calculateColumnRowHeights(20, 30);
+  const rowHeights = calculateColumnRowHeights(
+    store.interviewConfigs[InterviewType.DEANS_LIST].windowSizeMinutes,
+    store.interviewConfigs[InterviewType.IMPACT].windowSizeMinutes
+  );
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>

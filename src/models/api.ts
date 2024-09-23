@@ -16,8 +16,8 @@ export interface Event {
   city: string;
   stateprov: string;
   country: string;
-  dateStart: Date;
-  dateEnd: Date;
+  dateStart: string;
+  dateEnd: string;
   address: string;
   website: null | string;
   webcasts: string[];

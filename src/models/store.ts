@@ -1,6 +1,7 @@
 import { getEventSchedule, getEventTeams } from "@/lib/api";
 import { Event, Schedule, TeamList } from "@/models/api";
 import { ImpactExportCSV } from "@/models/schemas";
+import { addDays } from "date-fns";
 import { create } from "zustand";
 
 export enum InterviewType {
@@ -23,6 +24,12 @@ export interface AppState {
 
   schedule?: Schedule;
   setSchedule: (schedule: Schedule) => void;
+
+  startDate: Date;
+  setStartDate: (date: Date) => void;
+
+  endDate: Date;
+  setEndDate: (date: Date) => void;
 
   validImpactExportCSVData: ImpactExportCSV | null;
   setValidImpactExportCSVData: (data: ImpactExportCSV | null) => void;
@@ -56,7 +63,14 @@ const useAppStore = create<AppState>((set) => ({
         },
       };
 
-      return { event, eventTeams: teams, schedule, interviewConfigs: configs };
+      return {
+        event,
+        eventTeams: teams,
+        schedule,
+        interviewConfigs: configs,
+        startDate: addDays(new Date(event.dateStart), 1),
+        endDate: addDays(new Date(event.dateStart), 1),
+      };
     });
   },
 
@@ -65,6 +79,12 @@ const useAppStore = create<AppState>((set) => ({
 
   schedule: undefined,
   setSchedule: (schedule) => set({ schedule }),
+
+  startDate: new Date(2024, 0, 1),
+  setStartDate: (date) => set({ startDate: date }),
+
+  endDate: new Date(2024, 0, 1),
+  setEndDate: (date) => set({ endDate: date }),
 
   validImpactExportCSVData: null,
   setValidImpactExportCSVData: (data) =>

@@ -4,7 +4,7 @@ export default function TimeColumn({
   timeSlots,
   rowHeight,
 }: {
-  timeSlots: string[];
+  timeSlots: Date[];
   rowHeight: number;
 }) {
   return (
@@ -15,7 +15,10 @@ export default function TimeColumn({
           key={`time-${index}`}
           className="bg-gray-100 rounded"
         >
-          {time}
+          {time.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
         </CellWrapper>
       ))}
     </div>

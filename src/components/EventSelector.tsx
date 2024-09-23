@@ -30,6 +30,13 @@ export default function EventSelector() {
     });
   }, [year]);
 
+  // todo remove?
+  useEffect(() => {
+    if (availableEvents.length > 0 && store.event === undefined) {
+      store.setEvent(availableEvents[0]);
+    }
+  }, [availableEvents, store.event]);
+
   return (
     <div>
       <LabeledInput labelText="Year">
