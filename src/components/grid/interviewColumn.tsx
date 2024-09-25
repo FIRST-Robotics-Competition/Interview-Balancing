@@ -35,12 +35,15 @@ export default function InterviewColumn({
                   {...draggableProvided.dragHandleProps}
                   rowHeight={rowHeight}
                   className={cn({
-                    "bg-blue-100": slot.teamKey !== null,
-                    "bg-gray-100": slot.teamKey === null,
-                    "bg-yellow-300": slot.conflictsWithMatch,
+                    "bg-blue-100": slot.teamInfo !== null,
+                    "bg-gray-100": slot.teamInfo === null,
+                    "bg-yellow-300":
+                      slot.teamInfo?.scannedInfo?.conflictingMatch !== null &&
+                      slot.teamInfo?.scannedInfo?.conflictingMatch !==
+                        undefined,
                   })}
                 >
-                  {slot.teamKey !== null ? slot.teamKey : ""}
+                  {slot.teamInfo !== null ? slot.teamInfo.teamKey : ""}
                 </CellWrapper>
               )}
             </Draggable>

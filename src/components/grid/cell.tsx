@@ -9,7 +9,7 @@ const CellWrapper = React.forwardRef<
     <div
       className={cn(
         "flex h-full shadow-[inset_0px_-1px_0px_0px_#cbd5e0]",
-        className
+        className,
       )}
       ref={ref}
       {...props}

@@ -24,8 +24,8 @@ export default function EventSelector() {
     getEvents(year).then((events) => {
       setAvailableEvents(
         events.Events.filter(
-          (e) => !["OffSeason", "OffSeasonWithAzureSync"].includes(e.type)
-        ).sort(eventSortByDateComparator)
+          (e) => !["OffSeason", "OffSeasonWithAzureSync"].includes(e.type),
+        ).sort(eventSortByDateComparator),
       );
     });
   }, [year]);
@@ -58,7 +58,7 @@ export default function EventSelector() {
           </SelectTrigger>
           <SelectContent>
             {Object.entries(
-              groupBy(availableEvents, (e) => e.districtCode ?? "Regionals")
+              groupBy(availableEvents, (e) => e.districtCode ?? "Regionals"),
             )
               .sort((a, b) => a[0].localeCompare(b[0]))
               .map(([districtCode, events]) => (

@@ -7,28 +7,38 @@ export function updateTeamTimeSlots(
   timeslots: Date[],
   schedule: Schedule,
   existingSlots: InterviewSlot[],
-  interviewTurnaroundTime: number
+  interviewTurnaroundTime: number,
 ): InterviewSlot[] {
   const removedTeams = existingSlots
-    .map((slot) => slot.teamKey)
+    .map((slot) => slot.teamInfo)
     .filter((t) => t !== null)
-    .filter((team) => !teams.includes(team));
+    .map((t) => t.teamKey)
+    .filter((teamKey) => !teams.includes(teamKey));
 
   const unassignedTeams = teams.filter(
-    (team) => !existingSlots.some((slot) => slot.teamKey === team)
+    (team) => !existingSlots.some((slot) => slot.teamInfo?.teamKey === team),
   );
 
-  const newSlots = existingSlots.map((slot) => {
-    if (slot.teamKey !== null && !removedTeams.includes(slot.teamKey)) {
+  const newSlots: InterviewSlot[] = existingSlots.map((slot) => {
+    if (
+      slot.teamInfo !== null &&
+      !removedTeams.includes(slot.teamInfo.teamKey)
+    ) {
       return { ...slot };
     }
 
     const team = unassignedTeams.shift();
     if (team === undefined) {
-      return { ...slot, teamKey: null, conflictsWithMatch: false };
+      return { ...slot, teamInfo: null };
     }
 
-    return { ...slot, teamKey: team };
+    return {
+      ...slot,
+      teamInfo: {
+        teamKey: team,
+        scannedInfo: null,
+      },
+    };
   });
 
   return scanForConflicts(newSlots, schedule, interviewTurnaroundTime);
@@ -37,25 +47,20 @@ export function updateTeamTimeSlots(
 export function scanForSingleTeamsConflicts(
   slot: InterviewSlot,
   schedule: Schedule,
-  interviewTurnaroundTime: number
+  interviewTurnaroundTime: number,
 ): InterviewSlot {
-  if (slot.teamKey === null) {
-    return { ...slot, conflictsWithMatch: false };
+  if (slot.teamInfo === null) {
+    return { ...slot };
   }
 
-  console.log(slot.teamKey);
-  console.log(slot);
-  console.log(
-    schedule
-      .filter((match) =>
-        match.teams.map((t) => t.teamNumber.toString()).includes(slot.teamKey!)
-      )
-      .filter((match) => match.startTime !== null)
-  );
+  const slotStartTime = slot.time;
+  const slotEndTime = addMinutes(slotStartTime, interviewTurnaroundTime);
 
   const matches = schedule
     .filter((match) =>
-      match.teams.map((t) => t.teamNumber.toString()).includes(slot.teamKey!)
+      match.teams
+        .map((t) => t.teamNumber.toString())
+        .includes(slot.teamInfo!.teamKey),
     )
     .filter((match) => match.startTime !== null)
     .filter((match) => {
@@ -63,21 +68,27 @@ export function scanForSingleTeamsConflicts(
       // todo: extract +8 to constant match turnaround time
       const matchEndTime = addMinutes(matchStartTime, 8);
 
-      const slotStartTime = slot.time;
-      const slotEndTime = addMinutes(slotStartTime, interviewTurnaroundTime);
-
       return matchStartTime < slotEndTime && matchEndTime > slotStartTime;
     });
 
-  return { ...slot, conflictsWithMatch: matches.length > 0 };
+  return {
+    ...slot,
+    teamInfo: {
+      teamKey: slot.teamInfo.teamKey,
+      scannedInfo: {
+        conflictingMatch: matches.length > 0 ? matches[0] : null,
+        closestMatches: matches.slice(0, 3),
+      },
+    },
+  };
 }
 
 export function scanForConflicts(
   slots: InterviewSlot[],
   schedule: Schedule,
-  interviewTurnaroundTime: number
+  interviewTurnaroundTime: number,
 ): InterviewSlot[] {
   return slots.map((slot) =>
-    scanForSingleTeamsConflicts(slot, schedule, interviewTurnaroundTime)
+    scanForSingleTeamsConflicts(slot, schedule, interviewTurnaroundTime),
   );
 }

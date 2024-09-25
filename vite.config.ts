@@ -32,7 +32,7 @@ export default defineConfig({
               proxyReq.method,
               proxyReq.protocol,
               proxyReq.host,
-              proxyReq.path
+              proxyReq.path,
             );
 
             console.log(JSON.stringify(proxyReq.getHeaders(), undefined, 2));
@@ -42,7 +42,7 @@ export default defineConfig({
               "Received Response from the Target:",
               proxyRes.statusCode,
               req.url,
-              JSON.stringify(proxyRes.headers)
+              JSON.stringify(proxyRes.headers),
             );
           });
         },

@@ -46,7 +46,7 @@ export default function ImpactExportUploader() {
                 obj[header] = row[index]?.trim() || "";
                 return obj;
               },
-              {}
+              {},
             );
           });
 
@@ -56,7 +56,7 @@ export default function ImpactExportUploader() {
         } catch (error) {
           if (error instanceof z.ZodError) {
             const errors = error.errors.map(
-              (err) => `${err.path.join(".")}: ${err.message}`
+              (err) => `${err.path.join(".")}: ${err.message}`,
             );
             setImpactExportCSVValidationErrors(errors);
           } else {

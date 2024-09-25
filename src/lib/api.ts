@@ -44,10 +44,10 @@ function mergeSchedules(...schedules: Schedule[]): Schedule {
 
 function getSchedule(
   eventCode: string,
-  tournamentLevel: TournamentLevel
+  tournamentLevel: TournamentLevel,
 ): Promise<ScheduleResponse> {
   return get<ScheduleResponse>(
-    `${YEAR}/schedule/${eventCode}?tournamentLevel=${tournamentLevel}`
+    `${YEAR}/schedule/${eventCode}?tournamentLevel=${tournamentLevel}`,
   );
 }
 
@@ -61,6 +61,6 @@ export async function getEventSchedule(eventCode: string): Promise<Schedule> {
   return mergeSchedules(
     practiceSchedule.Schedule,
     qualSchedule.Schedule,
-    elimSchedule.Schedule
+    elimSchedule.Schedule,
   );
 }

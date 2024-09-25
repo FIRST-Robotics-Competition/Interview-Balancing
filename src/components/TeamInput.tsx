@@ -9,8 +9,8 @@ export default function TeamInput({
 }: {
   interviewType: InterviewType;
 }) {
-  const { interviewConfigs, updateInterviewConfig } = useAppStore();
-  const storeTeams = interviewConfigs[interviewType].teams;
+  const { interviewingTeams, updateInterviewingTeams } = useAppStore();
+  const storeTeams = interviewingTeams[interviewType];
   const [localTeams, setLocalTeams] = useState(storeTeams.join("\n"));
 
   useEffect(() => {
@@ -18,14 +18,14 @@ export default function TeamInput({
   }, [storeTeams]);
 
   const handleTextareaChange = (
-    event: React.ChangeEvent<HTMLTextAreaElement>
+    event: React.ChangeEvent<HTMLTextAreaElement>,
   ) => {
     const newValue = event.target.value;
     setLocalTeams(newValue);
 
     const newTeams = newValue.split("\n").filter((team) => team.trim() !== "");
     if (!isEqual(newTeams, storeTeams)) {
-      updateInterviewConfig(interviewType, { teams: newTeams });
+      updateInterviewingTeams(interviewType, newTeams);
     }
   };
 
