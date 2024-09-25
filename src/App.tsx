@@ -1,7 +1,7 @@
 import EventSelector from "@/components/EventSelector";
-import DNDGrid from "@/components/grid/grid";
 import ImpactExportUploader from "@/components/ImpactExportUploader";
 import TeamInput from "@/components/TeamInput";
+import DNDGrid from "@/components/grid/grid";
 import { InterviewType } from "@/models/store";
 
 function App() {

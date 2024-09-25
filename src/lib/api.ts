@@ -1,9 +1,9 @@
 import {
-  EventList,
   Event,
-  TeamList,
-  ScheduleResponse,
+  EventList,
   Schedule,
+  ScheduleResponse,
+  TeamList,
   TournamentLevel,
 } from "@/models/api";
 

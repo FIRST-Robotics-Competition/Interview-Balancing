@@ -2,9 +2,8 @@ import { Match } from "@/models/api";
 import { InterviewType } from "@/models/store";
 import { type ClassValue, clsx } from "clsx";
 import { addMinutes } from "date-fns";
-import { twMerge } from "tailwind-merge";
-
 import { set } from "date-fns";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

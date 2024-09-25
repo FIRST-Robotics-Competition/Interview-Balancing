@@ -1,6 +1,6 @@
 import { getEventSchedule, getEventTeams } from "@/lib/api";
 import { updateTeamTimeSlots } from "@/lib/slotAssignments";
-import { generateTimeSlots, InterviewSlot } from "@/lib/utils";
+import { InterviewSlot, generateTimeSlots } from "@/lib/utils";
 import { Event, Schedule, TeamList } from "@/models/api";
 import { ImpactExportCSV } from "@/models/schemas";
 import { addDays, setHours } from "date-fns";

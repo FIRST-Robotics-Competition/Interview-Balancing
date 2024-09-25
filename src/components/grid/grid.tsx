@@ -1,11 +1,11 @@
-import { useEffect, useRef } from "react";
-import { DragDropContext, DropResult } from "@hello-pangea/dnd";
-import useAppStore, { InterviewType } from "@/models/store";
-import { calculateColumnRowHeights } from "@/lib/utils";
-import TimeColumn from "@/components/grid/timeColumn";
 import InterviewColumn from "@/components/grid/interviewColumn";
-import { setHours } from "date-fns";
+import TimeColumn from "@/components/grid/timeColumn";
 import { scanForSingleTeamsConflicts } from "@/lib/slotAssignments";
+import { calculateColumnRowHeights } from "@/lib/utils";
+import useAppStore, { InterviewType } from "@/models/store";
+import { DragDropContext, DropResult } from "@hello-pangea/dnd";
+import { setHours } from "date-fns";
+import { useEffect, useRef } from "react";
 
 function DNDGrid() {
   const store = useAppStore();

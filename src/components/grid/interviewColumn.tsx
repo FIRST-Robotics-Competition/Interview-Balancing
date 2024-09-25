@@ -1,5 +1,5 @@
 import CellWrapper from "@/components/grid/cell";
-import { cn, InterviewSlot } from "@/lib/utils";
+import { InterviewSlot, cn } from "@/lib/utils";
 import { Draggable, Droppable } from "@hello-pangea/dnd";
 
 export default function InterviewColumn({

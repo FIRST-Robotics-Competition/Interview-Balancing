@@ -1,8 +1,8 @@
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import useAppStore, { InterviewType } from "@/models/store";
-import { useState, useEffect } from "react";
 import { isEqual } from "lodash-es";
+import { useEffect, useState } from "react";
 
 export default function TeamInput({
   interviewType,
