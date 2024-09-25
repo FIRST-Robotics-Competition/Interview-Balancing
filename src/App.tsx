@@ -7,19 +7,22 @@ import { InterviewType } from "@/models/store";
 function App() {
   return (
     <>
-      <div className="my-20"></div>
-      <ImpactExportUploader />
-      <div className="my-20"></div>
+      <div className="text-5xl mt-6 mb-5">Interview Planner</div>
       <EventSelector />
-      {/* <LabeledInput labelText="Number of panels">
-        <Input
-          type="number"
-          defaultValue={store.numPanels}
-          onChange={(e) => store.setNumPanels(Number(e.target.value))}
-        />
-      </LabeledInput> */}
+      <div className="flex gap-8 mt-4 [&>*]:w-1/2">
+        <div>
+          <div>deans list uploader</div>
 
-      <TeamInput interviewType={InterviewType.IMPACT} />
+          <TeamInput interviewType={InterviewType.DEANS_LIST} />
+        </div>
+
+        <div>
+          <ImpactExportUploader />
+
+          <TeamInput interviewType={InterviewType.IMPACT} />
+        </div>
+      </div>
+
       <DNDGrid />
     </>
   );

@@ -94,7 +94,10 @@ export default function ImpactExportUploader() {
         {isDragActive ? (
           <p>Drop the CSV file here...</p>
         ) : (
-          <p>Drag 'n' drop a CSV file here, or click to select one</p>
+          <p>
+            <b>Impact Award</b> - Drag 'n' drop a CSV file here, or click to
+            select one+
+          </p>
         )}
       </div>
       {fileRejections.length > 0 && (

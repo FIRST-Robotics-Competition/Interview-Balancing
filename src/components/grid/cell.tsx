@@ -8,7 +8,7 @@ const CellWrapper = React.forwardRef<
   <div>
     <div
       className={cn(
-        "flex h-full shadow-[inset_0px_-1px_0px_0px_#cbd5e0]",
+        "flex h-full shadow-[inset_0px_-1px_0px_0px_#cbd5e0] items-center justify-center",
         className,
       )}
       ref={ref}

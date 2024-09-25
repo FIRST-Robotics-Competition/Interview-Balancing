@@ -38,42 +38,46 @@ export default function EventSelector() {
   }, [availableEvents, store.event]);
 
   return (
-    <div>
-      <LabeledInput labelText="Year">
-        <Input
-          type="number"
-          defaultValue={year}
-          onChange={(e) => setYear(Number(e.target.value))}
-        />
-      </LabeledInput>
+    <div className="flex gap-4 justify-center">
+      <div className="w-[7rem]">
+        <LabeledInput labelText="Year">
+          <Input
+            type="number"
+            defaultValue={year}
+            onChange={(e) => setYear(Number(e.target.value))}
+          />
+        </LabeledInput>
+      </div>
 
-      <LabeledInput labelText="Event">
-        <Select
-          onValueChange={(e) =>
-            store.setEvent(availableEvents.find((event) => e === event.code)!)
-          }
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select an event" />
-          </SelectTrigger>
-          <SelectContent>
-            {Object.entries(
-              groupBy(availableEvents, (e) => e.districtCode ?? "Regionals"),
-            )
-              .sort((a, b) => a[0].localeCompare(b[0]))
-              .map(([districtCode, events]) => (
-                <SelectGroup key={districtCode}>
-                  <SelectLabel>{districtCode}</SelectLabel>
-                  {events.sort(eventSortByDateComparator).map((event) => (
-                    <SelectItem key={event.code} value={event.code}>
-                      {event.name}
-                    </SelectItem>
-                  ))}
-                </SelectGroup>
-              ))}
-          </SelectContent>
-        </Select>
-      </LabeledInput>
+      <div className="w-1/2">
+        <LabeledInput labelText="Event">
+          <Select
+            onValueChange={(e) =>
+              store.setEvent(availableEvents.find((event) => e === event.code)!)
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select an event" />
+            </SelectTrigger>
+            <SelectContent>
+              {Object.entries(
+                groupBy(availableEvents, (e) => e.districtCode ?? "Regionals"),
+              )
+                .sort((a, b) => a[0].localeCompare(b[0]))
+                .map(([districtCode, events]) => (
+                  <SelectGroup key={districtCode}>
+                    <SelectLabel>{districtCode}</SelectLabel>
+                    {events.sort(eventSortByDateComparator).map((event) => (
+                      <SelectItem key={event.code} value={event.code}>
+                        {event.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                ))}
+            </SelectContent>
+          </Select>
+        </LabeledInput>
+      </div>
     </div>
   );
 }

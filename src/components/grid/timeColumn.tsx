@@ -13,7 +13,7 @@ export default function TimeColumn({
         <CellWrapper
           rowHeight={rowHeight}
           key={`time-${index}`}
-          className="bg-gray-100 rounded"
+          className="bg-gray-100 rounded "
         >
           {time.toLocaleTimeString("en-US", {
             hour: "2-digit",
