@@ -1,4 +1,10 @@
 import CellWrapper from "@/components/grid/cell";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { InterviewSlot, cn } from "@/lib/utils";
 import { Draggable, Droppable } from "@hello-pangea/dnd";
 
@@ -43,7 +49,25 @@ export default function InterviewColumn({
                         undefined,
                   })}
                 >
-                  {slot.teamInfo !== null ? slot.teamInfo.teamKey : ""}
+                  {slot.teamInfo?.scannedInfo?.conflictingMatch !== null &&
+                  slot.teamInfo?.scannedInfo?.conflictingMatch !== undefined ? (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger className="underline italic text-red-500">
+                          {slot.teamInfo?.teamKey}
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          Overlaps with{" "}
+                          {
+                            slot.teamInfo?.scannedInfo?.conflictingMatch
+                              .description
+                          }
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ) : (
+                    <>{slot.teamInfo?.teamKey}</>
+                  )}
                 </CellWrapper>
               )}
             </Draggable>

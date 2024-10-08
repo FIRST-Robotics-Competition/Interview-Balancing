@@ -15,6 +15,7 @@ export interface InterviewSlot {
 
   teamInfo: {
     teamKey: string;
+    interviewee?: string;
 
     scannedInfo: {
       conflictingMatch: Match | null;
