@@ -1,9 +1,10 @@
 import { InterviewSlot } from "@/lib/utils";
 import { Schedule } from "@/models/api";
+import { Team } from "@/models/store";
 import { addMinutes } from "date-fns";
 
 export function updateTeamTimeSlots(
-  teams: string[],
+  teams: Team[],
   timeslots: Date[],
   schedule: Schedule,
   existingSlots: InterviewSlot[],
@@ -13,10 +14,11 @@ export function updateTeamTimeSlots(
     .map((slot) => slot.teamInfo)
     .filter((t) => t !== null)
     .map((t) => t.teamKey)
-    .filter((teamKey) => !teams.includes(teamKey));
+    .filter((teamKey) => !teams.map((t) => t.teamNumber).includes(teamKey));
 
   const unassignedTeams = teams.filter(
-    (team) => !existingSlots.some((slot) => slot.teamInfo?.teamKey === team),
+    (team) =>
+      !existingSlots.some((slot) => slot.teamInfo?.teamKey === team.teamNumber),
   );
 
   const newSlots: InterviewSlot[] = existingSlots.map((slot) => {
@@ -35,7 +37,7 @@ export function updateTeamTimeSlots(
     return {
       ...slot,
       teamInfo: {
-        teamKey: team,
+        teamKey: team.teamNumber,
         scannedInfo: null,
       },
     };

@@ -25,14 +25,14 @@ export interface Event {
 }
 
 export interface TeamList {
-  teams: Team[];
+  teams: TeamInfo[];
   teamCountTotal: number;
   teamCountPage: number;
   pageCurrent: number;
   pageTotal: number;
 }
 
-export interface Team {
+export interface TeamInfo {
   schoolName: string;
   website: string;
   homeCMP: string;

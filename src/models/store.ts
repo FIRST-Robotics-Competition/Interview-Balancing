@@ -18,6 +18,11 @@ export interface InterviewConfig {
   windowSizeMinutes: number;
 }
 
+export interface Team {
+  teamNumber: string;
+  interviewee?: string;
+}
+
 export interface AppState {
   event?: Event;
   setEvent: (event: Event) => void;
@@ -37,8 +42,8 @@ export interface AppState {
   timeSlots: Record<InterviewType, Date[]>;
   updateTimeSlots: (type: InterviewType, timeSlots: Date[]) => void;
 
-  interviewingTeams: Record<InterviewType, string[]>;
-  updateInterviewingTeams: (type: InterviewType, teams: string[]) => void;
+  interviewingTeams: Record<InterviewType, Team[]>;
+  updateInterviewingTeams: (type: InterviewType, teams: Team[]) => void;
 
   interviewSlots: Record<InterviewType, InterviewSlot[]>;
   updateInterviewSlots: (
@@ -71,12 +76,14 @@ const useAppStore = create<AppState>()(
         eventTeams: teams,
         schedule,
         interviewingTeams: {
-          [InterviewType.IMPACT]: teams.teams.map((t) =>
-            t.teamNumber.toString(),
-          ),
-          [InterviewType.DEANS_LIST]: teams.teams.map((t) =>
-            t.teamNumber.toString(),
-          ),
+          [InterviewType.IMPACT]: teams.teams.map((t) => ({
+            teamNumber: t.teamNumber.toString(),
+            interviewee: undefined,
+          })),
+          [InterviewType.DEANS_LIST]: teams.teams.map((t) => ({
+            teamNumber: t.teamNumber.toString(),
+            interviewee: undefined,
+          })),
         },
       }));
     },
@@ -226,7 +233,8 @@ useAppStore.subscribe(
             interviewType: type,
             time,
             teamInfo: {
-              teamKey: useAppStore.getState().interviewingTeams[type][idx],
+              teamKey:
+                useAppStore.getState().interviewingTeams[type][idx]?.teamNumber,
               scannedInfo: null,
             },
           })),
