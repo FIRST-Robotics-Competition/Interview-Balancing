@@ -16,7 +16,7 @@ import { groupBy } from "lodash-es";
 import React, { useEffect, useState } from "react";
 
 export default function EventSelector() {
-  const [year, setYear] = useState(new Date().getFullYear());
+  const [year, setYear] = useState(2024);
   const [availableEvents, setAvailableEvents] = useState<Event[]>([]);
   const store = useAppStore();
 
@@ -39,16 +39,6 @@ export default function EventSelector() {
 
   return (
     <div className="flex gap-4 justify-center">
-      <div className="w-[7rem]">
-        <LabeledInput labelText="Year">
-          <Input
-            type="number"
-            defaultValue={year}
-            onChange={(e) => setYear(Number(e.target.value))}
-          />
-        </LabeledInput>
-      </div>
-
       <div className="w-1/2">
         <LabeledInput labelText="Event">
           <Select
